@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OrderDaoImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">com.OnlineTickets.backend.daoimpl</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OrderDaoImpl (com.OnlineTickets.backend.daoimpl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OrderDaoImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (66/ 66)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package com.OnlineTickets.backend.daoimpl;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import com.OnlineTickets.backend.dao.OrderDao;
+<i>4</i>&nbsp;import com.OnlineTickets.backend.entity.OrderItem;
+<i>5</i>&nbsp;import com.OnlineTickets.backend.entity.TrainInfo;
+<i>6</i>&nbsp;import com.OnlineTickets.backend.entity.TrainStationInfo;
+<i>7</i>&nbsp;import com.OnlineTickets.backend.entity.UserOrder;
+<i>8</i>&nbsp;import com.OnlineTickets.backend.repository.OrderRepository;
+<i>9</i>&nbsp;import com.OnlineTickets.backend.repository.TrainInfoRepository;
+<i>10</i>&nbsp;import com.OnlineTickets.backend.repository.TrainStationInfoRepository;
+<i>11</i>&nbsp;import net.sf.json.JSON;
+<i>12</i>&nbsp;import net.sf.json.JSONArray;
+<i>13</i>&nbsp;import net.sf.json.JSONObject;
+<i>14</i>&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+<i>15</i>&nbsp;import org.springframework.stereotype.Repository;
+<i>16</i>&nbsp;
+<i>17</i>&nbsp;import java.math.BigInteger;
+<i>18</i>&nbsp;import java.util.*;
+<i>19</i>&nbsp;import java.util.stream.Collectors;
+<i>20</i>&nbsp;import java.util.stream.Stream;
+<i>21</i>&nbsp;
+<b class="fc"><i>22</i>&nbsp;@Repository</b>
+<b class="fc"><i>23</i>&nbsp;public class OrderDaoImpl implements OrderDao {</b>
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;    @Autowired
+<i>26</i>&nbsp;    TrainStationInfoRepository trainStationInfoRepository;
+<i>27</i>&nbsp;
+<i>28</i>&nbsp;    @Autowired
+<i>29</i>&nbsp;    TrainInfoRepository trainInfoRepository;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;    @Autowired
+<i>32</i>&nbsp;    OrderRepository orderRepository;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;    @Override
+<i>35</i>&nbsp;    public UserOrder findByOrderId(Integer orderId){
+<b class="fc"><i>36</i>&nbsp;        return orderRepository.findById(orderId).orElse(null);</b>
+<i>37</i>&nbsp;    }
+<i>38</i>&nbsp;    @Override
+<i>39</i>&nbsp;    public List&lt;UserOrder&gt; findByUserId(Integer userId) {
+<i>40</i>&nbsp;
+<b class="fc"><i>41</i>&nbsp;        return orderRepository.findByUserId(userId);</b>
+<i>42</i>&nbsp;    }
+<i>43</i>&nbsp;    @Override
+<i>44</i>&nbsp;    public List&lt;UserOrder&gt; findFutureOrder(Integer userId,Date tmpTime) {
+<b class="fc"><i>45</i>&nbsp;        return orderRepository.findFutureOrder(userId,tmpTime);</b>
+<i>46</i>&nbsp;    }
+<i>47</i>&nbsp;    @Override
+<i>48</i>&nbsp;    public List&lt;UserOrder&gt; findHistoryOrder(Integer userId,Date tmpTime) {
+<b class="fc"><i>49</i>&nbsp;        return orderRepository.findHistoryOrder(userId,tmpTime);</b>
+<i>50</i>&nbsp;    }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    @Override
+<i>53</i>&nbsp;    public Integer saveUserOrder(UserOrder userOrder) {
+<b class="fc"><i>54</i>&nbsp;        return orderRepository.save(userOrder).getOrderId();</b>
+<i>55</i>&nbsp;    }
+<i>56</i>&nbsp;
+<i>57</i>&nbsp;    @Override
+<i>58</i>&nbsp;    public void changeStatus(Integer orderId,int status) {
+<b class="fc"><i>59</i>&nbsp;        UserOrder order= orderRepository.findById(orderId).orElse(null);</b>
+<b class="fc"><i>60</i>&nbsp;        assert order != null;</b>
+<b class="fc"><i>61</i>&nbsp;        TrainInfo t= trainInfoRepository.findById(order.getTrainId()).orElse(null);</b>
+<b class="fc"><i>62</i>&nbsp;        Integer typeIndex = -1;</b>
+<b class="fc"><i>63</i>&nbsp;        JSONObject seatsToCancel = new JSONObject();</b>
+<b class="fc"><i>64</i>&nbsp;        List&lt;String&gt; seatTypes = Stream.of(&quot;first_seat_bits&quot;,&quot;hard_lie_bits&quot;,&quot;second_seat_bits&quot;,&quot;soft_seat_bits&quot;,&quot;stand_seat_bits&quot;,&quot;vip_seat_bits&quot;).collect(Collectors.toList());</b>
+<b class="fc"><i>65</i>&nbsp;        for( String seatType : seatTypes)</b>
+<b class="fc"><i>66</i>&nbsp;            seatsToCancel.put(seatType,new ArrayList&lt;Integer&gt;());</b>
+<b class="fc"><i>67</i>&nbsp;        Set&lt;OrderItem&gt; orderItems = order.getOrderItems();</b>
+<b class="fc"><i>68</i>&nbsp;        for(OrderItem orderItem : orderItems)</b>
+<i>69</i>&nbsp;        {
+<b class="fc"><i>70</i>&nbsp;            typeIndex = orderItem.getSeatType();</b>
+<b class="fc"><i>71</i>&nbsp;            JSONArray old = (JSONArray) seatsToCancel.get(seatTypes.get(typeIndex));</b>
+<b class="fc"><i>72</i>&nbsp;            old.add(orderItem.getSeatPosition());</b>
+<b class="fc"><i>73</i>&nbsp;            seatsToCancel.put(seatTypes.get(typeIndex),old);</b>
+<b class="fc"><i>74</i>&nbsp;        }</b>
+<b class="fc"><i>75</i>&nbsp;        assert t != null;</b>
+<b class="fc"><i>76</i>&nbsp;        List&lt;TrainStationInfo&gt; trainStationInfos= new ArrayList&lt;&gt;(t.getTrainStationInfoSet());</b>
+<b class="fc"><i>77</i>&nbsp;        String startStation = order.getStartStation(),endStation = order.getEndStation();</b>
+<b class="fc"><i>78</i>&nbsp;        Collections.sort(trainStationInfos);</b>
+<b class="fc"><i>79</i>&nbsp;        boolean flag = false;</b>
+<b class="fc"><i>80</i>&nbsp;        for(TrainStationInfo trainStationInfo : trainStationInfos)</b>
+<i>81</i>&nbsp;        {
+<b class="fc"><i>82</i>&nbsp;            if(trainStationInfo.getStationName().equals(startStation))</b>
+<b class="fc"><i>83</i>&nbsp;                flag = true;</b>
+<b class="fc"><i>84</i>&nbsp;            if(trainStationInfo.getStationName().equals(endStation))</b>
+<b class="fc"><i>85</i>&nbsp;                break;</b>
+<b class="fc"><i>86</i>&nbsp;            if(flag)</b>
+<i>87</i>&nbsp;            {
+<b class="fc"><i>88</i>&nbsp;                JSONArray  l = (JSONArray) seatsToCancel.get(seatTypes.get(typeIndex));</b>
+<b class="fc"><i>89</i>&nbsp;                byte[] bits = new byte[0];</b>
+<b class="fc"><i>90</i>&nbsp;                switch (typeIndex)</b>
+<i>91</i>&nbsp;                {
+<i>92</i>&nbsp;                    case 0:
+<b class="fc"><i>93</i>&nbsp;                        bits=trainStationInfo.getFirstSeatBits();</b>
+<b class="fc"><i>94</i>&nbsp;                        break;</b>
+<i>95</i>&nbsp;                    case 1:
+<b class="fc"><i>96</i>&nbsp;                        bits=trainStationInfo.getHardLieBits();</b>
+<b class="fc"><i>97</i>&nbsp;                        break;</b>
+<i>98</i>&nbsp;                    case 2:
+<b class="fc"><i>99</i>&nbsp;                        bits=trainStationInfo.getSecondSeatBits();</b>
+<b class="fc"><i>100</i>&nbsp;                        break;</b>
+<i>101</i>&nbsp;                    case 3:
+<b class="fc"><i>102</i>&nbsp;                        bits=trainStationInfo.getSoftLieBits();</b>
+<b class="fc"><i>103</i>&nbsp;                        break;</b>
+<i>104</i>&nbsp;                    case 4:
+<b class="fc"><i>105</i>&nbsp;                        bits=trainStationInfo.getStandSeatBits();</b>
+<b class="fc"><i>106</i>&nbsp;                        break;</b>
+<i>107</i>&nbsp;                    case 5:
+<b class="fc"><i>108</i>&nbsp;                        bits=trainStationInfo.getVipSeatBits();</b>
+<i>109</i>&nbsp;                        break;
+<i>110</i>&nbsp;                }
+<i>111</i>&nbsp;
+<b class="fc"><i>112</i>&nbsp;                for( Object i :l){</b>
+<b class="fc"><i>113</i>&nbsp;                    int offset = Integer.parseInt(i.toString());</b>
+<b class="fc"><i>114</i>&nbsp;                    bits[offset/8] &amp;=(byte)~(1&lt;&lt;(offset%8));</b>
+<b class="fc"><i>115</i>&nbsp;                }</b>
+<b class="fc"><i>116</i>&nbsp;                switch (typeIndex)</b>
+<i>117</i>&nbsp;                {
+<i>118</i>&nbsp;                    case 0:
+<b class="fc"><i>119</i>&nbsp;                        trainStationInfoRepository.updateFirstSeatBits(bits,trainStationInfo.getId());</b>
+<b class="fc"><i>120</i>&nbsp;                        break;</b>
+<i>121</i>&nbsp;                    case 1:
+<b class="fc"><i>122</i>&nbsp;                        trainStationInfoRepository.updateHardLieBits(bits,trainStationInfo.getId());</b>
+<b class="fc"><i>123</i>&nbsp;                        break;</b>
+<i>124</i>&nbsp;                    case 2:
+<b class="fc"><i>125</i>&nbsp;                        trainStationInfoRepository.updateSecondSeatBits(bits,trainStationInfo.getId());</b>
+<b class="fc"><i>126</i>&nbsp;                        break;</b>
+<i>127</i>&nbsp;                    case 3:
+<b class="fc"><i>128</i>&nbsp;                        trainStationInfoRepository.updateSoftLieBits(bits,trainStationInfo.getId());</b>
+<b class="fc"><i>129</i>&nbsp;                        break;</b>
+<i>130</i>&nbsp;                    case 4:
+<b class="fc"><i>131</i>&nbsp;                        trainStationInfoRepository.updateStandSeatBits(bits,trainStationInfo.getId());</b>
+<b class="fc"><i>132</i>&nbsp;                        break;</b>
+<i>133</i>&nbsp;                    case 5:
+<b class="fc"><i>134</i>&nbsp;                        trainStationInfoRepository.updateVipSeatBits(bits,trainStationInfo.getId());</b>
+<i>135</i>&nbsp;                        break;
+<i>136</i>&nbsp;                }
+<i>137</i>&nbsp;            }
+<i>138</i>&nbsp;
+<b class="fc"><i>139</i>&nbsp;        }</b>
+<b class="fc"><i>140</i>&nbsp;        orderRepository.changeStatus(orderId,status);</b>
+<b class="fc"><i>141</i>&nbsp;    }</b>
+<i>142</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-09-13 17:31</div>
+</div>
+</body>
+</html>

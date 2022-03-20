@@ -1,0 +1,316 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OrderServiceImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">com.OnlineTickets.backend.serviceimpl</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OrderServiceImpl (com.OnlineTickets.backend.serviceimpl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OrderServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (123/ 123)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package com.OnlineTickets.backend.serviceimpl;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import com.OnlineTickets.backend.constant.TrainConstants;
+<i>4</i>&nbsp;import com.OnlineTickets.backend.dao.OrderDao;
+<i>5</i>&nbsp;import com.OnlineTickets.backend.dao.PassengerDao;
+<i>6</i>&nbsp;import com.OnlineTickets.backend.dao.SearchDao;
+<i>7</i>&nbsp;import com.OnlineTickets.backend.entity.*;
+<i>8</i>&nbsp;import com.OnlineTickets.backend.service.OrderService;
+<i>9</i>&nbsp;import com.OnlineTickets.backend.utils.Message;
+<i>10</i>&nbsp;import net.sf.json.JSON;
+<i>11</i>&nbsp;import net.sf.json.JSONArray;
+<i>12</i>&nbsp;import net.sf.json.JSONObject;
+<i>13</i>&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+<i>14</i>&nbsp;import org.springframework.stereotype.Service;
+<i>15</i>&nbsp;import org.springframework.transaction.PlatformTransactionManager;
+<i>16</i>&nbsp;import org.springframework.transaction.TransactionDefinition;
+<i>17</i>&nbsp;import org.springframework.transaction.TransactionStatus;
+<i>18</i>&nbsp;import org.springframework.transaction.annotation.Transactional;
+<i>19</i>&nbsp;import org.springframework.transaction.support.DefaultTransactionDefinition;
+<i>20</i>&nbsp;
+<i>21</i>&nbsp;import java.text.ParseException;
+<i>22</i>&nbsp;import java.text.SimpleDateFormat;
+<i>23</i>&nbsp;import java.util.*;
+<i>24</i>&nbsp;import java.util.concurrent.locks.Lock;
+<i>25</i>&nbsp;import java.util.concurrent.locks.ReentrantLock;
+<i>26</i>&nbsp;
+<i>27</i>&nbsp;import static com.OnlineTickets.backend.utils.BitSetConvert.byteArray2BitSet;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;@Service
+<b class="fc"><i>31</i>&nbsp;public class OrderServiceImpl implements OrderService {</b>
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;    @Autowired
+<i>34</i>&nbsp;    PlatformTransactionManager transactionManager;
+<b class="fc"><i>35</i>&nbsp;    private static final Lock lock = new ReentrantLock();</b>
+<i>36</i>&nbsp;    @Autowired
+<i>37</i>&nbsp;    SearchDao searchDao;
+<i>38</i>&nbsp;    @Autowired
+<i>39</i>&nbsp;    OrderDao orderDao;
+<i>40</i>&nbsp;    @Autowired
+<i>41</i>&nbsp;    PassengerDao passengerDao;
+<i>42</i>&nbsp;    @Override
+<i>43</i>&nbsp;    public UserOrder findById(Integer orderId){
+<b class="fc"><i>44</i>&nbsp;        return orderDao.findByOrderId(orderId);</b>
+<i>45</i>&nbsp;    }
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;    @Override
+<i>48</i>&nbsp;    public List&lt;UserOrder&gt; getUserOrder(Integer userId) {
+<b class="fc"><i>49</i>&nbsp;        return orderDao.findByUserId(userId);</b>
+<i>50</i>&nbsp;    }
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    @Override
+<i>53</i>&nbsp;    public List&lt;UserOrder&gt; getOrderByTime(JSONObject requestBody) throws ParseException {
+<b class="fc"><i>54</i>&nbsp;        Integer userId = requestBody.getInt(&quot;userId&quot;);</b>
+<b class="fc"><i>55</i>&nbsp;        String filter = requestBody.get(&quot;method&quot;).toString();</b>
+<b class="fc"><i>56</i>&nbsp;        Long lstartTime = requestBody.getLong(&quot;startTime&quot;);</b>
+<b class="fc"><i>57</i>&nbsp;        Date startTime= new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).parse(new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).format(lstartTime));</b>
+<b class="fc"><i>58</i>&nbsp;        switch (filter) {</b>
+<i>59</i>&nbsp;            case &quot;H&quot;: {
+<b class="fc"><i>60</i>&nbsp;                return orderDao.findHistoryOrder(userId, startTime);</b>
+<i>61</i>&nbsp;            }
+<i>62</i>&nbsp;            case &quot;F&quot;: {
+<b class="fc"><i>63</i>&nbsp;                return orderDao.findFutureOrder(userId, startTime);</b>
+<i>64</i>&nbsp;            }
+<i>65</i>&nbsp;            case &quot;A&quot;: {
+<b class="fc"><i>66</i>&nbsp;                return orderDao.findByUserId(userId);</b>
+<i>67</i>&nbsp;            }
+<i>68</i>&nbsp;        }
+<b class="fc"><i>69</i>&nbsp;        return new ArrayList&lt;&gt;();</b>
+<i>70</i>&nbsp;    }
+<i>71</i>&nbsp;
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;    @Override
+<i>74</i>&nbsp;    //@Transactional(isolation = Isolation.SERIALIZABLE,propagation = Propagation.REQUIRES_NEW)
+<i>75</i>&nbsp;    public Message saveOrder(JSONObject order,Integer modify_id) {
+<b class="fc"><i>76</i>&nbsp;        UserOrder  userOrder = new UserOrder();</b>
+<b class="fc"><i>77</i>&nbsp;        Integer userId = Integer.parseInt(order.get(&quot;user_id&quot;).toString());</b>
+<b class="fc"><i>78</i>&nbsp;        Integer trainId = Integer.parseInt(order.get(&quot;train_id&quot;).toString());</b>
+<b class="fc"><i>79</i>&nbsp;        Integer startNo = Integer.parseInt(order.get(&quot;start_no&quot;).toString());</b>
+<b class="fc"><i>80</i>&nbsp;        Integer endNo = Integer.parseInt(order.get(&quot;end_no&quot;).toString());</b>
+<b class="fc"><i>81</i>&nbsp;        JSONArray passengers = (JSONArray) order.get(&quot;passenger_type&quot;);</b>
+<b class="fc"><i>82</i>&nbsp;        JSONArray passengerToSeat = new JSONArray();</b>
+<b class="fc"><i>83</i>&nbsp;        userOrder.setModifyId(modify_id);</b>
+<b class="fc"><i>84</i>&nbsp;        userOrder.setUserId(userId);</b>
+<b class="fc"><i>85</i>&nbsp;        userOrder.setOrderTime(new Date());</b>
+<b class="fc"><i>86</i>&nbsp;        userOrder.setTrainId(trainId);</b>
+<b class="fc"><i>87</i>&nbsp;        userOrder.setStatus(1);</b>
+<i>88</i>&nbsp;
+<b class="fc"><i>89</i>&nbsp;        DefaultTransactionDefinition defaultTransactionDefinition = new DefaultTransactionDefinition();</b>
+<b class="fc"><i>90</i>&nbsp;        defaultTransactionDefinition.setReadOnly(false);</b>
+<b class="fc"><i>91</i>&nbsp;        defaultTransactionDefinition.setIsolationLevel(TransactionDefinition.ISOLATION_DEFAULT);</b>
+<b class="fc"><i>92</i>&nbsp;        defaultTransactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);</b>
+<b class="fc"><i>93</i>&nbsp;        TransactionStatus status = transactionManager.getTransaction(defaultTransactionDefinition);</b>
+<i>94</i>&nbsp;        //config transaction manually
+<b class="fc"><i>95</i>&nbsp;        JSONObject ret =new JSONObject();</b>
+<i>96</i>&nbsp;        try{
+<i>97</i>&nbsp;
+<b class="fc"><i>98</i>&nbsp;            lock.lock();</b>
+<b class="fc"><i>99</i>&nbsp;            TrainInfo  trainInfo= searchDao.getTrainInfo(trainId);</b>
+<b class="fc"><i>100</i>&nbsp;            Integer trainType = trainInfo.getTrainType();</b>
+<b class="fc"><i>101</i>&nbsp;            userOrder.setTrainType(trainInfo.getTrainType());</b>
+<i>102</i>&nbsp;
+<b class="fc"><i>103</i>&nbsp;            userOrder.setTrainTag(trainInfo.getTrainTag());</b>
+<b class="fc"><i>104</i>&nbsp;            Set&lt;TrainStationInfo&gt; trainStationInfos = trainInfo.getTrainStationInfoSet();</b>
+<b class="fc"><i>105</i>&nbsp;            for(TrainStationInfo trainStationInfo :trainStationInfos)</b>
+<i>106</i>&nbsp;            {
+<b class="fc"><i>107</i>&nbsp;                if(trainStationInfo.getStationNo().equals(startNo))</b>
+<i>108</i>&nbsp;                {
+<b class="fc"><i>109</i>&nbsp;                    userOrder.setStartStation(trainStationInfo.getStationName());</b>
+<b class="fc"><i>110</i>&nbsp;                    userOrder.setStartTime(trainStationInfo.getArriveTime());</b>
+<i>111</i>&nbsp;                }
+<b class="fc"><i>112</i>&nbsp;                if(trainStationInfo.getStationNo().equals(endNo))</b>
+<i>113</i>&nbsp;                {
+<b class="fc"><i>114</i>&nbsp;                    userOrder.setEndStation(trainStationInfo.getStationName());</b>
+<b class="fc"><i>115</i>&nbsp;                    userOrder.setEndTime(trainStationInfo.getArriveTime());</b>
+<i>116</i>&nbsp;                }
+<b class="fc"><i>117</i>&nbsp;            }</b>
+<i>118</i>&nbsp;            //fill the UserOrder self
+<i>119</i>&nbsp;
+<b class="fc"><i>120</i>&nbsp;            int price =0;</b>
+<i>121</i>&nbsp;
+<b class="fc"><i>122</i>&nbsp;            Set&lt;OrderItem&gt; orderItems = new HashSet&lt;&gt;();</b>
+<b class="fc"><i>123</i>&nbsp;            for(Object passengerObject :passengers)</b>
+<i>124</i>&nbsp;            {
+<b class="fc"><i>125</i>&nbsp;                OrderItem orderItem = new OrderItem();</b>
+<b class="fc"><i>126</i>&nbsp;                JSONObject passenger = (JSONObject) passengerObject;</b>
+<b class="fc"><i>127</i>&nbsp;                Integer passengerId = passenger.getInt(&quot;passenger_id&quot;);</b>
+<b class="fc"><i>128</i>&nbsp;                Integer seatType = passenger.getInt(&quot;seat_type&quot;);</b>
+<i>129</i>&nbsp;
+<b class="fc"><i>130</i>&nbsp;                int singlePrice =TrainConstants.getPrice(trainType,seatType)*(endNo-startNo);</b>
+<b class="fc"><i>131</i>&nbsp;                price+=singlePrice;</b>
+<b class="fc"><i>132</i>&nbsp;                orderItem.setSeatPrice(singlePrice);</b>
+<i>133</i>&nbsp;
+<b class="fc"><i>134</i>&nbsp;                Passenger  pas= passengerDao.findById(passengerId);</b>
+<b class="fc"><i>135</i>&nbsp;                orderItem.setPassengerId(pas);</b>
+<b class="fc"><i>136</i>&nbsp;                orderItem.setSeatType(seatType);</b>
+<b class="fc"><i>137</i>&nbsp;                orderItem.setOrder(userOrder);</b>
+<i>138</i>&nbsp;                BitSet bits;
+<b class="fc"><i>139</i>&nbsp;                List&lt;Integer&gt; nums  = Arrays.asList(336,240,480,160,80,216);</b>
+<b class="fc"><i>140</i>&nbsp;                int num = nums.get(seatType);</b>
+<b class="fc"><i>141</i>&nbsp;                if(seatType == 4) num=(trainType == 1)?80:120;</b>
+<b class="fc"><i>142</i>&nbsp;                bits = new BitSet(num);</b>
+<b class="fc"><i>143</i>&nbsp;                List&lt;BitSet&gt; bitSets = new ArrayList&lt;&gt;();</b>
+<b class="fc"><i>144</i>&nbsp;                for(TrainStationInfo trainStationInfo :trainStationInfos) {</b>
+<b class="fc"><i>145</i>&nbsp;                    BitSet tmp =null;</b>
+<b class="fc"><i>146</i>&nbsp;                    Integer tmpStationNo = trainStationInfo.getStationNo();</b>
+<b class="fc"><i>147</i>&nbsp;                    if(tmpStationNo&gt;=startNo &amp;&amp; tmpStationNo&lt;endNo) {</b>
+<b class="fc"><i>148</i>&nbsp;                        switch (seatType) {</b>
+<i>149</i>&nbsp;                            case TrainConstants.FIRST_SEAT:
+<b class="fc"><i>150</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getFirstSeatBits());</b>
+<b class="fc"><i>151</i>&nbsp;                                break;</b>
+<i>152</i>&nbsp;                            case TrainConstants.HARD_LIE_SEAT:
+<b class="fc"><i>153</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getHardLieBits());</b>
+<b class="fc"><i>154</i>&nbsp;                                break;</b>
+<i>155</i>&nbsp;                            case TrainConstants.SECOND_SEAT:
+<b class="fc"><i>156</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getSecondSeatBits());</b>
+<b class="fc"><i>157</i>&nbsp;                                break;</b>
+<i>158</i>&nbsp;                            case TrainConstants.SOFT_LIE_SEAT:
+<b class="fc"><i>159</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getSoftLieBits());</b>
+<b class="fc"><i>160</i>&nbsp;                                break;</b>
+<i>161</i>&nbsp;                            case TrainConstants.STAND_SEAT:
+<b class="fc"><i>162</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getStandSeatBits());</b>
+<b class="fc"><i>163</i>&nbsp;                                break;</b>
+<i>164</i>&nbsp;                            case TrainConstants.VIP_SEAT:
+<b class="fc"><i>165</i>&nbsp;                                tmp = byteArray2BitSet(trainStationInfo.getVipSeatBits());</b>
+<b class="fc"><i>166</i>&nbsp;                                break;</b>
+<i>167</i>&nbsp;                            case 6:
+<i>168</i>&nbsp;                                break;
+<i>169</i>&nbsp;                        }
+<b class="fc"><i>170</i>&nbsp;                        bitSets.add(tmp);</b>
+<b class="fc"><i>171</i>&nbsp;                        bits.or(tmp);</b>
+<i>172</i>&nbsp;                    }
+<b class="fc"><i>173</i>&nbsp;                }</b>
+<b class="fc"><i>174</i>&nbsp;                int i = 0;</b>
+<b class="fc"><i>175</i>&nbsp;                for(;i&lt;num;i++)</b>
+<i>176</i>&nbsp;                {
+<b class="fc"><i>177</i>&nbsp;                    if(!bits.get(i))</b>
+<i>178</i>&nbsp;                    {
+<b class="fc"><i>179</i>&nbsp;                        orderItem.setSeatPosition(i);</b>
+<b class="fc"><i>180</i>&nbsp;                        int k = 0;</b>
+<b class="fc"><i>181</i>&nbsp;                        for(TrainStationInfo trainStationInfo :trainStationInfos) {</b>
+<b class="fc"><i>182</i>&nbsp;                            Integer tmpStationNo = trainStationInfo.getStationNo();</b>
+<b class="fc"><i>183</i>&nbsp;                            if(tmpStationNo&gt;=startNo &amp;&amp; tmpStationNo&lt;endNo) {</b>
+<b class="fc"><i>184</i>&nbsp;                                bitSets.get(k).set(i);</b>
+<b class="fc"><i>185</i>&nbsp;                                searchDao.updateBits(seatType, bitSets.get(k), trainStationInfo.getId());</b>
+<b class="fc"><i>186</i>&nbsp;                                k++;</b>
+<i>187</i>&nbsp;                            }
+<b class="fc"><i>188</i>&nbsp;                        }</b>
+<b class="fc"><i>189</i>&nbsp;                        break;</b>
+<i>190</i>&nbsp;                    }
+<i>191</i>&nbsp;                }
+<b class="fc"><i>192</i>&nbsp;                if(i==num)</b>
+<i>193</i>&nbsp;                {
+<b class="fc"><i>194</i>&nbsp;                    transactionManager.commit(status);//commit transaction</b>
+<b class="fc"><i>195</i>&nbsp;                    lock.unlock();</b>
+<b class="fc"><i>196</i>&nbsp;                    return Message.createMessage(-200,&quot;座位已无&quot;);</b>
+<i>197</i>&nbsp;                }
+<b class="fc"><i>198</i>&nbsp;                orderItems.add(orderItem);</b>
+<b class="fc"><i>199</i>&nbsp;                JSONObject seat = new JSONObject();</b>
+<b class="fc"><i>200</i>&nbsp;                seat.put(&quot;seat&quot;,TrainConstants.getSeat(seatType,i));</b>
+<b class="fc"><i>201</i>&nbsp;                seat.put(&quot;name&quot;,orderItem.getPassengerId().getReal_name());</b>
+<b class="fc"><i>202</i>&nbsp;                passengerToSeat.add(seat);</b>
+<i>203</i>&nbsp;
+<b class="fc"><i>204</i>&nbsp;            }</b>
+<b class="fc"><i>205</i>&nbsp;            ret = new JSONObject();</b>
+<b class="fc"><i>206</i>&nbsp;            ret.put(&quot;seatTable&quot;,passengerToSeat);</b>
+<b class="fc"><i>207</i>&nbsp;            userOrder.setOrderItems(orderItems);</b>
+<b class="fc"><i>208</i>&nbsp;            Integer newOrderId = orderDao.saveUserOrder(userOrder);</b>
+<b class="fc"><i>209</i>&nbsp;            ret.put(&quot;orderId&quot;,newOrderId);</b>
+<b class="fc"><i>210</i>&nbsp;            transactionManager.commit(status);//commit transaction</b>
+<i>211</i>&nbsp;
+<i>212</i>&nbsp;        }
+<b class="fc"><i>213</i>&nbsp;        catch (Exception e){</b>
+<b class="fc"><i>214</i>&nbsp;            transactionManager.rollback(status);</b>
+<b class="fc"><i>215</i>&nbsp;            throw e;</b>
+<b class="fc"><i>216</i>&nbsp;        }</b>
+<b class="fc"><i>217</i>&nbsp;        lock.unlock();</b>
+<b class="fc"><i>218</i>&nbsp;        return Message.createMessage(200,&quot;消费成功&quot;,ret);</b>
+<i>219</i>&nbsp;
+<i>220</i>&nbsp;    }
+<i>221</i>&nbsp;
+<i>222</i>&nbsp;
+<i>223</i>&nbsp;    @Override
+<i>224</i>&nbsp;    @Transactional
+<i>225</i>&nbsp;    public void changeStatus(Integer order_id, int status){
+<b class="fc"><i>226</i>&nbsp;        orderDao.changeStatus(order_id, status);</b>
+<b class="fc"><i>227</i>&nbsp;    }</b>
+<i>228</i>&nbsp;    @Override
+<i>229</i>&nbsp;    @Transactional
+<i>230</i>&nbsp;    public void cancelOrder(Integer orderId) {
+<b class="fc"><i>231</i>&nbsp;            orderDao.changeStatus(orderId,0);</b>
+<b class="fc"><i>232</i>&nbsp;    }</b>
+<i>233</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-09-13 17:31</div>
+</div>
+</body>
+</html>

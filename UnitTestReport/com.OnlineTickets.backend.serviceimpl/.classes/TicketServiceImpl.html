@@ -1,0 +1,627 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: TicketServiceImpl</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">com.OnlineTickets.backend.serviceimpl</a> ]
+</div>
+
+<h1>Coverage Summary for Class: TicketServiceImpl (com.OnlineTickets.backend.serviceimpl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TicketServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/ 8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (387/ 387)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package com.OnlineTickets.backend.serviceimpl;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import com.OnlineTickets.backend.config.JsonDateValueProcessor;
+<i>4</i>&nbsp;import com.OnlineTickets.backend.dao.SearchDao;
+<i>5</i>&nbsp;import com.OnlineTickets.backend.entity.MapStation;
+<i>6</i>&nbsp;import com.OnlineTickets.backend.entity.TrainInfo;
+<i>7</i>&nbsp;import com.OnlineTickets.backend.entity.TrainStationInfo;
+<i>8</i>&nbsp;import com.OnlineTickets.backend.service.TicketService;
+<i>9</i>&nbsp;import com.OnlineTickets.backend.utils.BitSetConvert;
+<i>10</i>&nbsp;import com.OnlineTickets.backend.utils.MapPath;
+<i>11</i>&nbsp;import com.OnlineTickets.backend.utils.Message;
+<i>12</i>&nbsp;import net.sf.json.JSONArray;
+<i>13</i>&nbsp;import net.sf.json.JSONObject;
+<i>14</i>&nbsp;import net.sf.json.JsonConfig;
+<i>15</i>&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+<i>16</i>&nbsp;import org.springframework.stereotype.Service;
+<i>17</i>&nbsp;
+<i>18</i>&nbsp;import java.util.*;
+<i>19</i>&nbsp;
+<i>20</i>&nbsp;@Service
+<b class="fc"><i>21</i>&nbsp;public class TicketServiceImpl implements TicketService {</b>
+<i>22</i>&nbsp;    @Autowired
+<i>23</i>&nbsp;    SearchDao searchDao;
+<i>24</i>&nbsp;    @Override
+<i>25</i>&nbsp;    public JSONArray PtoPSearch(Date target, String startCity, String endCity) {
+<i>26</i>&nbsp;
+<b class="fc"><i>27</i>&nbsp;        List&lt;Integer&gt; start= searchDao.cityToStations(startCity);</b>
+<b class="fc"><i>28</i>&nbsp;        List&lt;Integer&gt; end= searchDao.cityToStations(endCity);</b>
+<b class="fc"><i>29</i>&nbsp;        JSONArray ret = new JSONArray();</b>
+<b class="fc"><i>30</i>&nbsp;        List&lt;Map&lt;String,Object&gt;&gt; trains = new ArrayList&lt;&gt;();</b>
+<i>31</i>&nbsp;       // long time1 = new Date().getTime();
+<i>32</i>&nbsp;        //Ë«ÏòÄ£ºýËÑË÷
+<b class="fc"><i>33</i>&nbsp;       if(start.size()&gt;1&amp;&amp;end.size()&gt;1){</b>
+<b class="fc"><i>34</i>&nbsp;            Integer startCityId = searchDao.getStationById(start.get(0)).getCityId();</b>
+<b class="fc"><i>35</i>&nbsp;            Integer endCityId = searchDao.getStationById(end.get(0)).getCityId();</b>
+<b class="fc"><i>36</i>&nbsp;            trains = searchDao.getTrains(target,startCityId,endCityId);</b>
+<i>37</i>&nbsp;        }
+<b class="fc"><i>38</i>&nbsp;       if(start.size()&gt;1&amp;&amp;end.size()==1){</b>
+<b class="fc"><i>39</i>&nbsp;           Integer startCityId = searchDao.getStationById(start.get(0)).getCityId();</b>
+<b class="fc"><i>40</i>&nbsp;            trains = searchDao.getTrainsCityToStation(target,startCityId,end.get(0));</b>
+<i>41</i>&nbsp;       }
+<b class="fc"><i>42</i>&nbsp;        if(start.size()==1&amp;&amp;end.size()&gt;1){</b>
+<b class="fc"><i>43</i>&nbsp;            Integer endCityId = searchDao.getStationById(end.get(0)).getCityId();</b>
+<b class="fc"><i>44</i>&nbsp;            trains = searchDao.getTrainsStationToCity(target,start.get(0),endCityId);</b>
+<i>45</i>&nbsp;        }
+<b class="fc"><i>46</i>&nbsp;        if(start.size()==1&amp;&amp;end.size()==1){</b>
+<b class="fc"><i>47</i>&nbsp;            trains = searchDao.getTrainsStationToStation(target,start.get(0),end.get(0));</b>
+<i>48</i>&nbsp;        }
+<b class="fc"><i>49</i>&nbsp;        if(start.size()==0||end.size()==0){</b>
+<b class="fc"><i>50</i>&nbsp;            return null;</b>
+<i>51</i>&nbsp;        }
+<i>52</i>&nbsp;       // long time2 = new Date().getTime();
+<i>53</i>&nbsp;       // System.out.println(time2-time1);
+<i>54</i>&nbsp;       // long time3 = new Date().getTime();
+<b class="fc"><i>55</i>&nbsp;        if(trains.size()&gt;=1){</b>
+<b class="fc"><i>56</i>&nbsp;            for (Map&lt;String, Object&gt; train : trains) {</b>
+<b class="fc"><i>57</i>&nbsp;                JSONObject item = new JSONObject();</b>
+<b class="fc"><i>58</i>&nbsp;                Integer trainId = (Integer) train.get(&quot;train_id&quot;);</b>
+<b class="fc"><i>59</i>&nbsp;                Integer start_no = (Integer) train.get(&quot;start_no&quot;);</b>
+<b class="fc"><i>60</i>&nbsp;                Integer end_no = (Integer) train.get(&quot;end_no&quot;);</b>
+<b class="fc"><i>61</i>&nbsp;                TrainInfo trainInfo = searchDao.getTrainInfo(trainId);</b>
+<b class="fc"><i>62</i>&nbsp;                item.put(&quot;train_tag&quot;,trainInfo.getTrainTag());</b>
+<b class="fc"><i>63</i>&nbsp;                item.put(&quot;train_type&quot;,trainInfo.getTrainType());</b>
+<b class="fc"><i>64</i>&nbsp;                item.put(&quot;train_id&quot;, train.get(&quot;train_id&quot;));</b>
+<b class="fc"><i>65</i>&nbsp;                item.put(&quot;start_no&quot;,start_no);</b>
+<b class="fc"><i>66</i>&nbsp;                item.put(&quot;end_no&quot;,end_no);</b>
+<b class="fc"><i>67</i>&nbsp;                Set&lt;TrainStationInfo&gt; stationInfoSet =trainInfo.getTrainStationInfoSet();</b>
+<i>68</i>&nbsp;
+<b class="fc"><i>69</i>&nbsp;                if(trainInfo.getTrainType()&gt;0){</b>
+<b class="fc"><i>70</i>&nbsp;                    BitSet first = new BitSet(336);</b>
+<b class="fc"><i>71</i>&nbsp;                    BitSet second = new BitSet(480);</b>
+<b class="fc"><i>72</i>&nbsp;                    BitSet vip = new BitSet(216);</b>
+<b class="fc"><i>73</i>&nbsp;                    BitSet stand = new BitSet(80);</b>
+<b class="fc"><i>74</i>&nbsp;                    for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<i>75</i>&nbsp;
+<b class="fc"><i>76</i>&nbsp;                        if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>77</i>&nbsp;                            if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>78</i>&nbsp;                                item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>79</i>&nbsp;                                item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>80</i>&nbsp;                            }
+<b class="fc"><i>81</i>&nbsp;                            if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>82</i>&nbsp;                                first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>83</i>&nbsp;                                second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>84</i>&nbsp;                                vip.or(BitSetConvert.byteArray2BitSet(stationInfo.getVipSeatBits()));</b>
+<b class="fc"><i>85</i>&nbsp;                                stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<i>86</i>&nbsp;                            }
+<i>87</i>&nbsp;                            else{
+<b class="fc"><i>88</i>&nbsp;                                item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>89</i>&nbsp;                                item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>90</i>&nbsp;                            }
+<i>91</i>&nbsp;                        }
+<b class="fc"><i>92</i>&nbsp;                    }</b>
+<b class="fc"><i>93</i>&nbsp;                    item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>94</i>&nbsp;                    item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>95</i>&nbsp;                    item.put(&quot;vip_seat&quot;,216-vip.cardinality());</b>
+<b class="fc"><i>96</i>&nbsp;                    item.put(&quot;stand_seat&quot;,80-stand.cardinality());</b>
+<b class="fc"><i>97</i>&nbsp;                    item.put(&quot;price&quot;,(end_no-start_no)*88);</b>
+<i>98</i>&nbsp;                }
+<b class="fc"><i>99</i>&nbsp;                if(trainInfo.getTrainType()==0){</b>
+<b class="fc"><i>100</i>&nbsp;                    BitSet first = new BitSet(336);</b>
+<b class="fc"><i>101</i>&nbsp;                    BitSet second = new BitSet(480);</b>
+<b class="fc"><i>102</i>&nbsp;                    BitSet softLie = new BitSet(160);</b>
+<b class="fc"><i>103</i>&nbsp;                    BitSet hardLie = new BitSet(240);</b>
+<b class="fc"><i>104</i>&nbsp;                    BitSet stand = new BitSet(120);</b>
+<b class="fc"><i>105</i>&nbsp;                    for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<b class="fc"><i>106</i>&nbsp;                        if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>107</i>&nbsp;                            if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>108</i>&nbsp;                                item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>109</i>&nbsp;                                item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>110</i>&nbsp;                            }
+<b class="fc"><i>111</i>&nbsp;                            if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>112</i>&nbsp;                                first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>113</i>&nbsp;                                second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>114</i>&nbsp;                                softLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getSoftLieBits()));</b>
+<b class="fc"><i>115</i>&nbsp;                                stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<b class="fc"><i>116</i>&nbsp;                                hardLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getHardLieBits()));</b>
+<i>117</i>&nbsp;                            }
+<i>118</i>&nbsp;                            else{
+<b class="fc"><i>119</i>&nbsp;                                item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>120</i>&nbsp;                                item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>121</i>&nbsp;                            }
+<i>122</i>&nbsp;                        }
+<b class="fc"><i>123</i>&nbsp;                    }</b>
+<b class="fc"><i>124</i>&nbsp;                    item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>125</i>&nbsp;                    item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>126</i>&nbsp;                    item.put(&quot;softLie_seat&quot;,160-softLie.cardinality());</b>
+<b class="fc"><i>127</i>&nbsp;                    item.put(&quot;hardLie_seat&quot;,240-hardLie.cardinality());</b>
+<b class="fc"><i>128</i>&nbsp;                    item.put(&quot;stand_seat&quot;,120-stand.cardinality());</b>
+<b class="fc"><i>129</i>&nbsp;                    item.put(&quot;price&quot;,(end_no-start_no)*66);</b>
+<i>130</i>&nbsp;                }
+<b class="fc"><i>131</i>&nbsp;                ret.add(item);</b>
+<b class="fc"><i>132</i>&nbsp;            }</b>
+<i>133</i>&nbsp;        }
+<b class="fc"><i>134</i>&nbsp;        return ret;</b>
+<i>135</i>&nbsp;    }
+<i>136</i>&nbsp;
+<i>137</i>&nbsp;    @Override
+<i>138</i>&nbsp;    public JSONArray ChangeTicketSearch(Date target, String start, String end) {
+<b class="fc"><i>139</i>&nbsp;        List&lt;Integer&gt; startCity= searchDao.cityToStations(start);</b>
+<b class="fc"><i>140</i>&nbsp;        List&lt;Integer&gt; endCity= searchDao.cityToStations(end);</b>
+<i>141</i>&nbsp;
+<i>142</i>&nbsp;
+<b class="fc"><i>143</i>&nbsp;        JSONArray ret = new JSONArray();</b>
+<b class="fc"><i>144</i>&nbsp;        List&lt;Map&lt;String,Object&gt;&gt; trains =new ArrayList&lt;&gt;();</b>
+<b class="fc"><i>145</i>&nbsp;        long time1 = new Date().getTime();</b>
+<i>146</i>&nbsp;        //Ë«ÏòÄ£ºýËÑË÷
+<i>147</i>&nbsp;
+<b class="fc"><i>148</i>&nbsp;        Integer startCityId = searchDao.getStationById(startCity.get(0)).getCityId();</b>
+<b class="fc"><i>149</i>&nbsp;        Integer endCityId = searchDao.getStationById(endCity.get(0)).getCityId();</b>
+<b class="fc"><i>150</i>&nbsp;        trains = searchDao.getTrains(target,startCityId,endCityId);</b>
+<i>151</i>&nbsp;
+<i>152</i>&nbsp;
+<b class="fc"><i>153</i>&nbsp;        long time2 = new Date().getTime();</b>
+<b class="fc"><i>154</i>&nbsp;        System.out.println(time2-time1);</b>
+<b class="fc"><i>155</i>&nbsp;        long time3 = new Date().getTime();</b>
+<b class="fc"><i>156</i>&nbsp;        for (Map&lt;String, Object&gt; train : trains) {</b>
+<b class="fc"><i>157</i>&nbsp;            JSONObject item = new JSONObject();</b>
+<b class="fc"><i>158</i>&nbsp;            Integer trainId = (Integer) train.get(&quot;train_id&quot;);</b>
+<b class="fc"><i>159</i>&nbsp;            Integer start_no = (Integer) train.get(&quot;start_no&quot;);</b>
+<b class="fc"><i>160</i>&nbsp;            Integer end_no = (Integer) train.get(&quot;end_no&quot;);</b>
+<b class="fc"><i>161</i>&nbsp;            TrainInfo trainInfo = searchDao.getTrainInfo(trainId);</b>
+<b class="fc"><i>162</i>&nbsp;            item.put(&quot;train_tag&quot;,trainInfo.getTrainTag());</b>
+<b class="fc"><i>163</i>&nbsp;            item.put(&quot;train_type&quot;,trainInfo.getTrainType());</b>
+<b class="fc"><i>164</i>&nbsp;            item.put(&quot;train_id&quot;, train.get(&quot;train_id&quot;));</b>
+<b class="fc"><i>165</i>&nbsp;            item.put(&quot;start_no&quot;,start_no);</b>
+<b class="fc"><i>166</i>&nbsp;            item.put(&quot;end_no&quot;,end_no);</b>
+<b class="fc"><i>167</i>&nbsp;            Set&lt;TrainStationInfo&gt; stationInfoSet =trainInfo.getTrainStationInfoSet();</b>
+<i>168</i>&nbsp;
+<b class="fc"><i>169</i>&nbsp;            if(trainInfo.getTrainType()&gt;0){</b>
+<b class="fc"><i>170</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>171</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>172</i>&nbsp;                BitSet vip = new BitSet(216);</b>
+<b class="fc"><i>173</i>&nbsp;                BitSet stand = new BitSet(80);</b>
+<b class="fc"><i>174</i>&nbsp;                for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<i>175</i>&nbsp;
+<b class="fc"><i>176</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>177</i>&nbsp;                        if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>178</i>&nbsp;                            item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>179</i>&nbsp;                            item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>180</i>&nbsp;                        }
+<b class="fc"><i>181</i>&nbsp;                        if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>182</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>183</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>184</i>&nbsp;                            vip.or(BitSetConvert.byteArray2BitSet(stationInfo.getVipSeatBits()));</b>
+<b class="fc"><i>185</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<i>186</i>&nbsp;                        }
+<i>187</i>&nbsp;                        else{
+<b class="fc"><i>188</i>&nbsp;                            item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>189</i>&nbsp;                            item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>190</i>&nbsp;                        }
+<i>191</i>&nbsp;                    }
+<b class="fc"><i>192</i>&nbsp;                }</b>
+<b class="fc"><i>193</i>&nbsp;                item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>194</i>&nbsp;                item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>195</i>&nbsp;                item.put(&quot;vip_seat&quot;,216-vip.cardinality());</b>
+<b class="fc"><i>196</i>&nbsp;                item.put(&quot;stand_seat&quot;,80-stand.cardinality());</b>
+<b class="fc"><i>197</i>&nbsp;                item.put(&quot;price&quot;,(end_no-start_no)*88);</b>
+<i>198</i>&nbsp;            }
+<b class="fc"><i>199</i>&nbsp;            if(trainInfo.getTrainType()==0){</b>
+<b class="fc"><i>200</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>201</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>202</i>&nbsp;                BitSet softLie = new BitSet(160);</b>
+<b class="fc"><i>203</i>&nbsp;                BitSet hardLie = new BitSet(240);</b>
+<b class="fc"><i>204</i>&nbsp;                BitSet stand = new BitSet(120);</b>
+<b class="fc"><i>205</i>&nbsp;                for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<b class="fc"><i>206</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>207</i>&nbsp;                        if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>208</i>&nbsp;                            item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>209</i>&nbsp;                            item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>210</i>&nbsp;                        }
+<b class="fc"><i>211</i>&nbsp;                        if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>212</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>213</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>214</i>&nbsp;                            softLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getSoftLieBits()));</b>
+<b class="fc"><i>215</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<b class="fc"><i>216</i>&nbsp;                            hardLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getHardLieBits()));</b>
+<i>217</i>&nbsp;                        }
+<i>218</i>&nbsp;                        else{
+<b class="fc"><i>219</i>&nbsp;                            item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>220</i>&nbsp;                            item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>221</i>&nbsp;                        }
+<i>222</i>&nbsp;                    }
+<b class="fc"><i>223</i>&nbsp;                }</b>
+<b class="fc"><i>224</i>&nbsp;                item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>225</i>&nbsp;                item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>226</i>&nbsp;                item.put(&quot;softLie_seat&quot;,160-softLie.cardinality());</b>
+<b class="fc"><i>227</i>&nbsp;                item.put(&quot;hardLie_seat&quot;,240-hardLie.cardinality());</b>
+<b class="fc"><i>228</i>&nbsp;                item.put(&quot;stand_seat&quot;,120-stand.cardinality());</b>
+<b class="fc"><i>229</i>&nbsp;                item.put(&quot;price&quot;,(end_no-start_no)*66);</b>
+<i>230</i>&nbsp;            }
+<b class="fc"><i>231</i>&nbsp;            ret.add(item);</b>
+<b class="fc"><i>232</i>&nbsp;        }</b>
+<b class="fc"><i>233</i>&nbsp;        long time4 = new Date().getTime();</b>
+<b class="fc"><i>234</i>&nbsp;        System.out.println(time4-time3);</b>
+<b class="fc"><i>235</i>&nbsp;        return ret;</b>
+<i>236</i>&nbsp;    }
+<i>237</i>&nbsp;
+<i>238</i>&nbsp;   /* @Override
+<i>239</i>&nbsp;    public List&lt;Map&lt;String, Object&gt;&gt; testPerformance(Date target,Integer startCity, Integer endCity) {
+<i>240</i>&nbsp;        return searchDao.getTrains(target,startCity,startCity);
+<i>241</i>&nbsp;    }*/
+<i>242</i>&nbsp;
+<i>243</i>&nbsp;    @Override
+<i>244</i>&nbsp;    public JSONObject searchStation(String start, String end) {
+<b class="fc"><i>245</i>&nbsp;        List&lt;String&gt; startStations = searchDao.getStations(start);</b>
+<b class="fc"><i>246</i>&nbsp;        List&lt;String&gt; endStations =searchDao.getStations(end);</b>
+<b class="fc"><i>247</i>&nbsp;        JSONObject obj = new JSONObject();</b>
+<b class="fc"><i>248</i>&nbsp;        obj.put(&quot;startStation&quot;,startStations);</b>
+<b class="fc"><i>249</i>&nbsp;        obj.put(&quot;endStation&quot;,endStations);</b>
+<b class="fc"><i>250</i>&nbsp;        return obj;</b>
+<i>251</i>&nbsp;    }
+<i>252</i>&nbsp;
+<i>253</i>&nbsp;    @Override
+<i>254</i>&nbsp;    public JSONObject getTicketInfo(Integer trainId, Integer start_no, Integer end_no) {
+<i>255</i>&nbsp;
+<b class="fc"><i>256</i>&nbsp;        TrainInfo trainInfo = searchDao.getTrainInfo(trainId);</b>
+<b class="fc"><i>257</i>&nbsp;        JSONObject item = new JSONObject();</b>
+<b class="fc"><i>258</i>&nbsp;        item.put(&quot;train_tag&quot;,trainInfo.getTrainTag());</b>
+<b class="fc"><i>259</i>&nbsp;        item.put(&quot;train_type&quot;,trainInfo.getTrainType());</b>
+<b class="fc"><i>260</i>&nbsp;        item.put(&quot;train_id&quot;, trainId);</b>
+<b class="fc"><i>261</i>&nbsp;        item.put(&quot;start_no&quot;,start_no);</b>
+<b class="fc"><i>262</i>&nbsp;        item.put(&quot;end_no&quot;,end_no);</b>
+<b class="fc"><i>263</i>&nbsp;        Set&lt;TrainStationInfo&gt; stationInfoSet =trainInfo.getTrainStationInfoSet();</b>
+<b class="fc"><i>264</i>&nbsp;        if(trainInfo.getTrainType()&gt;0){</b>
+<b class="fc"><i>265</i>&nbsp;            BitSet first = new BitSet(336);</b>
+<b class="fc"><i>266</i>&nbsp;            BitSet second = new BitSet(480);</b>
+<b class="fc"><i>267</i>&nbsp;            BitSet vip = new BitSet(216);</b>
+<b class="fc"><i>268</i>&nbsp;            BitSet stand = new BitSet(80);</b>
+<b class="fc"><i>269</i>&nbsp;            for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<i>270</i>&nbsp;
+<b class="fc"><i>271</i>&nbsp;                if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>272</i>&nbsp;                    if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>273</i>&nbsp;                        item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>274</i>&nbsp;                        item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>275</i>&nbsp;                    }
+<b class="fc"><i>276</i>&nbsp;                    if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>277</i>&nbsp;                        first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>278</i>&nbsp;                        second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>279</i>&nbsp;                        vip.or(BitSetConvert.byteArray2BitSet(stationInfo.getVipSeatBits()));</b>
+<b class="fc"><i>280</i>&nbsp;                        stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<i>281</i>&nbsp;                    }
+<i>282</i>&nbsp;                    else{
+<b class="fc"><i>283</i>&nbsp;                        item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>284</i>&nbsp;                        item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>285</i>&nbsp;                    }
+<i>286</i>&nbsp;                }
+<b class="fc"><i>287</i>&nbsp;            }</b>
+<b class="fc"><i>288</i>&nbsp;            item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>289</i>&nbsp;            item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>290</i>&nbsp;            item.put(&quot;vip_seat&quot;,216-vip.cardinality());</b>
+<b class="fc"><i>291</i>&nbsp;            item.put(&quot;stand_seat&quot;,80-stand.cardinality());</b>
+<i>292</i>&nbsp;
+<i>293</i>&nbsp;        }
+<b class="fc"><i>294</i>&nbsp;        if(trainInfo.getTrainType()==0){</b>
+<b class="fc"><i>295</i>&nbsp;            BitSet first = new BitSet(336);</b>
+<b class="fc"><i>296</i>&nbsp;            BitSet second = new BitSet(480);</b>
+<b class="fc"><i>297</i>&nbsp;            BitSet softLie = new BitSet(160);</b>
+<b class="fc"><i>298</i>&nbsp;            BitSet hardLie = new BitSet(240);</b>
+<b class="fc"><i>299</i>&nbsp;            BitSet stand = new BitSet(120);</b>
+<b class="fc"><i>300</i>&nbsp;            for (TrainStationInfo stationInfo : stationInfoSet) {</b>
+<b class="fc"><i>301</i>&nbsp;                if(stationInfo.getStationNo()&gt;=start_no&amp;&amp;stationInfo.getStationNo()&lt;=end_no){</b>
+<b class="fc"><i>302</i>&nbsp;                    if(stationInfo.getStationNo()==start_no){</b>
+<b class="fc"><i>303</i>&nbsp;                        item.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>304</i>&nbsp;                        item.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>305</i>&nbsp;                    }
+<b class="fc"><i>306</i>&nbsp;                    if(stationInfo.getStationNo()!=end_no){</b>
+<b class="fc"><i>307</i>&nbsp;                        first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>308</i>&nbsp;                        second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>309</i>&nbsp;                        softLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getSoftLieBits()));</b>
+<b class="fc"><i>310</i>&nbsp;                        stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<b class="fc"><i>311</i>&nbsp;                        hardLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getHardLieBits()));</b>
+<i>312</i>&nbsp;                    }
+<i>313</i>&nbsp;                    else{
+<b class="fc"><i>314</i>&nbsp;                        item.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>315</i>&nbsp;                        item.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>316</i>&nbsp;                    }
+<i>317</i>&nbsp;                }
+<b class="fc"><i>318</i>&nbsp;            }</b>
+<b class="fc"><i>319</i>&nbsp;            item.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>320</i>&nbsp;            item.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>321</i>&nbsp;            item.put(&quot;softLie_seat&quot;,160-softLie.cardinality());</b>
+<b class="fc"><i>322</i>&nbsp;            item.put(&quot;hardLie_seat&quot;,240-hardLie.cardinality());</b>
+<b class="fc"><i>323</i>&nbsp;            item.put(&quot;stand_seat&quot;,120-stand.cardinality());</b>
+<i>324</i>&nbsp;
+<i>325</i>&nbsp;        }
+<b class="fc"><i>326</i>&nbsp;        return item;</b>
+<i>327</i>&nbsp;    }
+<i>328</i>&nbsp;
+<i>329</i>&nbsp;    @Override
+<i>330</i>&nbsp;    public JSONObject searchStationChange(String start, String end) {
+<b class="fc"><i>331</i>&nbsp;        Integer startCity = searchDao.getCityByName(start);</b>
+<b class="fc"><i>332</i>&nbsp;        Integer endCity =searchDao.getCityByName(end);</b>
+<b class="fc"><i>333</i>&nbsp;        List&lt;String&gt; startStations = searchDao.cityIdToStations(startCity);</b>
+<b class="fc"><i>334</i>&nbsp;        List&lt;String&gt; endStations =searchDao.cityIdToStations(endCity);</b>
+<b class="fc"><i>335</i>&nbsp;        JSONObject obj = new JSONObject();</b>
+<b class="fc"><i>336</i>&nbsp;        obj.put(&quot;startStation&quot;,startStations);</b>
+<b class="fc"><i>337</i>&nbsp;        obj.put(&quot;endStation&quot;,endStations);</b>
+<b class="fc"><i>338</i>&nbsp;        return obj;</b>
+<i>339</i>&nbsp;
+<i>340</i>&nbsp;
+<i>341</i>&nbsp;    }
+<i>342</i>&nbsp;
+<i>343</i>&nbsp;    @Override
+<i>344</i>&nbsp;    public Message searchTimeTableInfoByTag(Date date, String trainTag){
+<b class="fc"><i>345</i>&nbsp;        return searchDao.searchTimeTableInfoByTag(date, trainTag);</b>
+<i>346</i>&nbsp;    }
+<i>347</i>&nbsp;
+<i>348</i>&nbsp;    @Override
+<i>349</i>&nbsp;    public JSONArray neo4jPassBy(Date target, String startCity, String endCity) {
+<b class="fc"><i>350</i>&nbsp;      JSONArray ret = new JSONArray();</b>
+<i>351</i>&nbsp;
+<b class="fc"><i>352</i>&nbsp;        List&lt;MapPath&gt; tmp = searchDao.getOneTransitSortByJava(startCity,endCity,60,1440,20);</b>
+<b class="fc"><i>353</i>&nbsp;        for (MapPath path : tmp) {</b>
+<b class="fc"><i>354</i>&nbsp;            MapStation startStation= path.getStartStation();</b>
+<b class="fc"><i>355</i>&nbsp;            MapStation passStation=startStation.getPathLine().getEndStation();</b>
+<b class="fc"><i>356</i>&nbsp;            MapStation endStation=passStation.getPathLine().getEndStation();</b>
+<b class="fc"><i>357</i>&nbsp;            Date firstStartDate = new Date(target.getYear(),target.getMonth(),target.getDate()+path.getDayDifOfFirstLine());</b>
+<b class="fc"><i>358</i>&nbsp;            Date secondStartDate = new Date(target.getYear(),target.getMonth(),target.getDate()+path.getDayDifOfSecondLine());</b>
+<b class="fc"><i>359</i>&nbsp;            if(firstStartDate.after(secondStartDate))</b>
+<b class="fc"><i>360</i>&nbsp;                continue;</b>
+<b class="fc"><i>361</i>&nbsp;            TrainInfo firstTrainInfo = searchDao.getTrainInfoByTag(startStation.getPathLine().getTrainTag(),firstStartDate);</b>
+<b class="fc"><i>362</i>&nbsp;            if (firstTrainInfo==null) continue;</b>
+<b class="fc"><i>363</i>&nbsp;            TrainInfo secondTrainInfo=searchDao.getTrainInfoByTag(passStation.getPathLine().getTrainTag(),secondStartDate);</b>
+<b class="fc"><i>364</i>&nbsp;            if (secondTrainInfo==null) continue;</b>
+<b class="fc"><i>365</i>&nbsp;            Set&lt;TrainStationInfo&gt; firstSet = firstTrainInfo.getTrainStationInfoSet();</b>
+<b class="fc"><i>366</i>&nbsp;            if (firstSet==null) continue;</b>
+<b class="fc"><i>367</i>&nbsp;            Set&lt;TrainStationInfo&gt; secondSet = secondTrainInfo.getTrainStationInfoSet();</b>
+<b class="fc"><i>368</i>&nbsp;            if (secondSet==null) continue;</b>
+<b class="fc"><i>369</i>&nbsp;            int firstStartNo=-1,secondStartNo=-1,firstEndNo=-1,secondEndNo=-1;</b>
+<b class="fc"><i>370</i>&nbsp;            Date firstStartTime = new Date();</b>
+<b class="fc"><i>371</i>&nbsp;            Date firstEndTime = new Date();</b>
+<b class="fc"><i>372</i>&nbsp;            Date secondStartTime = new Date();</b>
+<b class="fc"><i>373</i>&nbsp;            Date secondEndTime = new Date();</b>
+<b class="fc"><i>374</i>&nbsp;            for (TrainStationInfo trainStationInfo : firstSet) {</b>
+<b class="fc"><i>375</i>&nbsp;                if(trainStationInfo.getStationName().equals(startStation.getStationName())){</b>
+<b class="fc"><i>376</i>&nbsp;                    firstStartTime=trainStationInfo.getArriveTime();</b>
+<b class="fc"><i>377</i>&nbsp;                    firstStartNo=trainStationInfo.getStationNo();</b>
+<i>378</i>&nbsp;                }
+<b class="fc"><i>379</i>&nbsp;                if (trainStationInfo.getStationName().equals(passStation.getStationName())){</b>
+<b class="fc"><i>380</i>&nbsp;                    firstEndTime=trainStationInfo.getArriveTime();</b>
+<b class="fc"><i>381</i>&nbsp;                    firstEndNo=trainStationInfo.getStationNo();</b>
+<i>382</i>&nbsp;                }
+<b class="fc"><i>383</i>&nbsp;            }</b>
+<b class="fc"><i>384</i>&nbsp;            for (TrainStationInfo trainStationInfo : secondSet) {</b>
+<b class="fc"><i>385</i>&nbsp;                if(trainStationInfo.getStationName().equals(endStation.getStationName())){</b>
+<b class="fc"><i>386</i>&nbsp;                    secondEndTime=trainStationInfo.getArriveTime();</b>
+<b class="fc"><i>387</i>&nbsp;                    secondEndNo=trainStationInfo.getStationNo();</b>
+<i>388</i>&nbsp;                }
+<b class="fc"><i>389</i>&nbsp;                if (trainStationInfo.getStationName().equals(passStation.getStationName())){</b>
+<b class="fc"><i>390</i>&nbsp;                    secondStartTime=trainStationInfo.getArriveTime();</b>
+<b class="fc"><i>391</i>&nbsp;                    secondStartNo=trainStationInfo.getStationNo();</b>
+<i>392</i>&nbsp;                }
+<b class="fc"><i>393</i>&nbsp;            }</b>
+<b class="fc"><i>394</i>&nbsp;            if (secondStartTime.before(firstEndTime))</b>
+<b class="fc"><i>395</i>&nbsp;                continue;</b>
+<b class="fc"><i>396</i>&nbsp;            JSONObject firstRail = new JSONObject();</b>
+<b class="fc"><i>397</i>&nbsp;            JSONObject secondRail = new JSONObject();</b>
+<b class="fc"><i>398</i>&nbsp;            firstRail.put(&quot;train_tag&quot;,firstTrainInfo.getTrainTag());</b>
+<b class="fc"><i>399</i>&nbsp;            firstRail.put(&quot;train_id&quot;,firstTrainInfo.getTrainId());</b>
+<b class="fc"><i>400</i>&nbsp;            secondRail.put(&quot;train_tag&quot;,secondTrainInfo.getTrainTag());</b>
+<b class="fc"><i>401</i>&nbsp;            secondRail.put(&quot;train_id&quot;,secondTrainInfo.getTrainId());</b>
+<b class="fc"><i>402</i>&nbsp;            firstRail.put(&quot;start_no&quot;,firstStartNo);</b>
+<b class="fc"><i>403</i>&nbsp;            firstRail.put(&quot;end_no&quot;,firstEndNo);</b>
+<b class="fc"><i>404</i>&nbsp;            secondRail.put(&quot;start_no&quot;,secondStartNo);</b>
+<b class="fc"><i>405</i>&nbsp;            secondRail.put(&quot;end_no&quot;,secondEndNo);</b>
+<b class="fc"><i>406</i>&nbsp;            if(firstTrainInfo.getTrainType()&gt;0){</b>
+<b class="fc"><i>407</i>&nbsp;                firstRail.put(&quot;train_type&quot;,1);</b>
+<b class="fc"><i>408</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>409</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>410</i>&nbsp;                BitSet vip = new BitSet(216);</b>
+<b class="fc"><i>411</i>&nbsp;                BitSet stand = new BitSet(80);</b>
+<b class="fc"><i>412</i>&nbsp;                for (TrainStationInfo stationInfo : firstSet) {</b>
+<b class="fc"><i>413</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=firstStartNo&amp;&amp;stationInfo.getStationNo()&lt;=firstEndNo){</b>
+<b class="fc"><i>414</i>&nbsp;                        if(stationInfo.getStationNo()==firstStartNo){</b>
+<b class="fc"><i>415</i>&nbsp;                            firstRail.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>416</i>&nbsp;                            firstRail.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>417</i>&nbsp;
+<i>418</i>&nbsp;                        }
+<b class="fc"><i>419</i>&nbsp;                        if(stationInfo.getStationNo()!=firstEndNo){</b>
+<b class="fc"><i>420</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>421</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>422</i>&nbsp;                            vip.or(BitSetConvert.byteArray2BitSet(stationInfo.getVipSeatBits()));</b>
+<b class="fc"><i>423</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<i>424</i>&nbsp;                        }
+<i>425</i>&nbsp;                        else{
+<b class="fc"><i>426</i>&nbsp;                            firstRail.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>427</i>&nbsp;                            firstRail.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>428</i>&nbsp;                        }
+<i>429</i>&nbsp;                    }
+<b class="fc"><i>430</i>&nbsp;                }</b>
+<b class="fc"><i>431</i>&nbsp;                firstRail.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>432</i>&nbsp;                firstRail.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>433</i>&nbsp;                firstRail.put(&quot;vip_seat&quot;,216-vip.cardinality());</b>
+<b class="fc"><i>434</i>&nbsp;                firstRail.put(&quot;stand_seat&quot;,80-stand.cardinality());</b>
+<i>435</i>&nbsp;
+<i>436</i>&nbsp;            }
+<b class="fc"><i>437</i>&nbsp;            if(firstTrainInfo.getTrainType()==0){</b>
+<b class="fc"><i>438</i>&nbsp;                firstRail.put(&quot;train_type&quot;,0);</b>
+<b class="fc"><i>439</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>440</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>441</i>&nbsp;                BitSet softLie = new BitSet(160);</b>
+<b class="fc"><i>442</i>&nbsp;                BitSet hardLie = new BitSet(240);</b>
+<b class="fc"><i>443</i>&nbsp;                BitSet stand = new BitSet(120);</b>
+<b class="fc"><i>444</i>&nbsp;                for (TrainStationInfo stationInfo : firstSet) {</b>
+<b class="fc"><i>445</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=firstStartNo&amp;&amp;stationInfo.getStationNo()&lt;=firstEndNo){</b>
+<b class="fc"><i>446</i>&nbsp;                        if(stationInfo.getStationNo()==firstStartNo){</b>
+<b class="fc"><i>447</i>&nbsp;                            firstRail.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>448</i>&nbsp;                            firstRail.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>449</i>&nbsp;                        }
+<b class="fc"><i>450</i>&nbsp;                        if(stationInfo.getStationNo()!=firstEndNo){</b>
+<b class="fc"><i>451</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>452</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>453</i>&nbsp;                            softLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getSoftLieBits()));</b>
+<b class="fc"><i>454</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<b class="fc"><i>455</i>&nbsp;                            hardLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getHardLieBits()));</b>
+<i>456</i>&nbsp;                        }
+<i>457</i>&nbsp;                        else{
+<b class="fc"><i>458</i>&nbsp;                            firstRail.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>459</i>&nbsp;                            firstRail.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>460</i>&nbsp;                        }
+<i>461</i>&nbsp;                    }
+<b class="fc"><i>462</i>&nbsp;                }</b>
+<b class="fc"><i>463</i>&nbsp;                firstRail.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>464</i>&nbsp;                firstRail.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>465</i>&nbsp;                firstRail.put(&quot;softLie_seat&quot;,160-softLie.cardinality());</b>
+<b class="fc"><i>466</i>&nbsp;                firstRail.put(&quot;hardLie_seat&quot;,240-hardLie.cardinality());</b>
+<b class="fc"><i>467</i>&nbsp;                firstRail.put(&quot;stand_seat&quot;,120-stand.cardinality());</b>
+<i>468</i>&nbsp;
+<i>469</i>&nbsp;            }
+<b class="fc"><i>470</i>&nbsp;            if(secondTrainInfo.getTrainType()&gt;0){</b>
+<b class="fc"><i>471</i>&nbsp;                secondRail.put(&quot;train_type&quot;,1);</b>
+<b class="fc"><i>472</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>473</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>474</i>&nbsp;                BitSet vip = new BitSet(216);</b>
+<b class="fc"><i>475</i>&nbsp;                BitSet stand = new BitSet(80);</b>
+<b class="fc"><i>476</i>&nbsp;                for (TrainStationInfo stationInfo : secondSet) {</b>
+<i>477</i>&nbsp;
+<b class="fc"><i>478</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=secondStartNo&amp;&amp;stationInfo.getStationNo()&lt;=secondEndNo){</b>
+<b class="fc"><i>479</i>&nbsp;                        if(stationInfo.getStationNo()==secondStartNo){</b>
+<b class="fc"><i>480</i>&nbsp;                            secondRail.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>481</i>&nbsp;                            secondRail.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>482</i>&nbsp;                        }
+<b class="fc"><i>483</i>&nbsp;                        if(stationInfo.getStationNo()!=secondEndNo){</b>
+<b class="fc"><i>484</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>485</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>486</i>&nbsp;                            vip.or(BitSetConvert.byteArray2BitSet(stationInfo.getVipSeatBits()));</b>
+<b class="fc"><i>487</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<i>488</i>&nbsp;                        }
+<i>489</i>&nbsp;                        else{
+<b class="fc"><i>490</i>&nbsp;                            secondRail.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>491</i>&nbsp;                            secondRail.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>492</i>&nbsp;                        }
+<i>493</i>&nbsp;                    }
+<b class="fc"><i>494</i>&nbsp;                }</b>
+<b class="fc"><i>495</i>&nbsp;                secondRail.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>496</i>&nbsp;                secondRail.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>497</i>&nbsp;                secondRail.put(&quot;vip_seat&quot;,216-vip.cardinality());</b>
+<b class="fc"><i>498</i>&nbsp;                secondRail.put(&quot;stand_seat&quot;,80-stand.cardinality());</b>
+<i>499</i>&nbsp;
+<i>500</i>&nbsp;            }
+<b class="fc"><i>501</i>&nbsp;            if(secondTrainInfo.getTrainType()==0){</b>
+<b class="fc"><i>502</i>&nbsp;                secondRail.put(&quot;train_type&quot;,0);</b>
+<b class="fc"><i>503</i>&nbsp;                BitSet first = new BitSet(336);</b>
+<b class="fc"><i>504</i>&nbsp;                BitSet second = new BitSet(480);</b>
+<b class="fc"><i>505</i>&nbsp;                BitSet softLie = new BitSet(160);</b>
+<b class="fc"><i>506</i>&nbsp;                BitSet hardLie = new BitSet(240);</b>
+<b class="fc"><i>507</i>&nbsp;                BitSet stand = new BitSet(120);</b>
+<b class="fc"><i>508</i>&nbsp;                for (TrainStationInfo stationInfo : secondSet) {</b>
+<b class="fc"><i>509</i>&nbsp;                    if(stationInfo.getStationNo()&gt;=secondStartNo&amp;&amp;stationInfo.getStationNo()&lt;=secondEndNo){</b>
+<b class="fc"><i>510</i>&nbsp;                        if(stationInfo.getStationNo()==secondStartNo){</b>
+<b class="fc"><i>511</i>&nbsp;                            secondRail.put(&quot;start_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>512</i>&nbsp;                            secondRail.put(&quot;start_time&quot;,stationInfo.getArriveTime());</b>
+<i>513</i>&nbsp;                        }
+<b class="fc"><i>514</i>&nbsp;                        if(stationInfo.getStationNo()!=secondEndNo){</b>
+<b class="fc"><i>515</i>&nbsp;                            first.or(BitSetConvert.byteArray2BitSet(stationInfo.getFirstSeatBits()));</b>
+<b class="fc"><i>516</i>&nbsp;                            second.or(BitSetConvert.byteArray2BitSet(stationInfo.getSecondSeatBits()));</b>
+<b class="fc"><i>517</i>&nbsp;                            softLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getSoftLieBits()));</b>
+<b class="fc"><i>518</i>&nbsp;                            stand.or(BitSetConvert.byteArray2BitSet(stationInfo.getStandSeatBits()));</b>
+<b class="fc"><i>519</i>&nbsp;                            hardLie.or(BitSetConvert.byteArray2BitSet(stationInfo.getHardLieBits()));</b>
+<i>520</i>&nbsp;                        }
+<i>521</i>&nbsp;                        else{
+<b class="fc"><i>522</i>&nbsp;                            secondRail.put(&quot;end_station&quot;,stationInfo.getStationName());</b>
+<b class="fc"><i>523</i>&nbsp;                            secondRail.put(&quot;end_time&quot;,stationInfo.getArriveTime());</b>
+<i>524</i>&nbsp;                        }
+<i>525</i>&nbsp;                    }
+<b class="fc"><i>526</i>&nbsp;                }</b>
+<b class="fc"><i>527</i>&nbsp;                secondRail.put(&quot;first_seat&quot;,336-first.cardinality());</b>
+<b class="fc"><i>528</i>&nbsp;                secondRail.put(&quot;second_seat&quot;,480-second.cardinality());</b>
+<b class="fc"><i>529</i>&nbsp;                secondRail.put(&quot;softLie_seat&quot;,160-softLie.cardinality());</b>
+<b class="fc"><i>530</i>&nbsp;                secondRail.put(&quot;hardLie_seat&quot;,240-hardLie.cardinality());</b>
+<b class="fc"><i>531</i>&nbsp;                secondRail.put(&quot;stand_seat&quot;,120-stand.cardinality());</b>
+<i>532</i>&nbsp;
+<i>533</i>&nbsp;            }
+<i>534</i>&nbsp;
+<b class="fc"><i>535</i>&nbsp;            JSONObject item =new JSONObject();</b>
+<b class="fc"><i>536</i>&nbsp;            item.put(&quot;first_rail&quot;,firstRail);</b>
+<b class="fc"><i>537</i>&nbsp;            item.put(&quot;second_rail&quot;,secondRail);</b>
+<b class="fc"><i>538</i>&nbsp;            ret.add(item);</b>
+<i>539</i>&nbsp;
+<b class="fc"><i>540</i>&nbsp;        }</b>
+<b class="fc"><i>541</i>&nbsp;        return ret;</b>
+<i>542</i>&nbsp;    }
+<i>543</i>&nbsp;
+<i>544</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-09-13 17:31</div>
+</div>
+</body>
+</html>
